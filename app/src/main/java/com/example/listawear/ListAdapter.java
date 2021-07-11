@@ -7,34 +7,33 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import android.widget.LinearLayout;
+
 
 public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
+    final private AdapterCallback callback;
     private List<ItemsList> mItems = new ArrayList<>();
-    private RecyclerViewClickListener listener;
 
-    public ListAdapter(List<ItemsList> _items,RecyclerViewClickListener listener){
-        mItems = _items;
-        this.listener = listener;
+    public ListAdapter(List<ItemsList> _items, AdapterCallback _callback){
+        this.mItems = _items;
+        this.callback = _callback;
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class ViewHolder extends RecyclerView.ViewHolder {
         ImageView imageView;
-        TextView textView,textView2;
+        TextView textView;
+        LinearLayout contenedor;
+
         public ViewHolder(@NonNull View itemView){
             super(itemView);
+            contenedor = itemView.findViewById(R.id.contenedor);
             imageView = itemView.findViewById(R.id.imageView);
             textView = itemView.findViewById(R.id.textView);
-            textView2 =itemView.findViewById(R.id.textView2);
-            itemView.setOnClickListener(this);
         }
-        @Override
-        public void onClick(View view) {
-            listener.onClick(itemView,getPosition());
-        }
-    }// class ViewHolder
+    } // class ViewHolder
+
     @NonNull
     @Override
     public ListAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i){
@@ -43,39 +42,48 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
         ViewHolder viewHolder = new ViewHolder(view);
         return viewHolder;
     } // ListAdapter.ViewHolder
+
     @Override
     public void onBindViewHolder(@NonNull ListAdapter.ViewHolder viewHolder, int i){
         ItemsList itemsList = mItems.get(i);
         viewHolder.imageView.setImageResource(itemsList.getImageItem());
         viewHolder.textView.setText(itemsList.getNameItem());
+        viewHolder.contenedor.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(callback != null){
+                    callback.onItemClicked(v, i);
+                }
+            }
+        });
     }
+
     @Override
     public int getItemCount(){
         return mItems.size();
     }
 
-    public interface RecyclerViewClickListener{
-        void onClick(View v,int i);
+    // Interfaz para la opción de tap de cada item
+    public interface AdapterCallback {
+        void onItemClicked(View v, int itemPosition);
     }
+
 }
 
-class ItemsList implements Serializable {
-    private int imageItem;
-    private String nameItem;
-    private String descripcion;
+class ItemsList {
+    final private int imageItem;
+    final private String nameItem;
+    final private String descriptionItem;
 
-    public ItemsList(int _imageItem, String _nameItem,String _descripcion){
+    public ItemsList(int _imageItem, String _nameItem, String _descriptionItem){
         this.imageItem = _imageItem;
         this.nameItem = _nameItem;
-        this.descripcion = _descripcion;
+        this.descriptionItem = _descriptionItem;
     }
 
-    public int getImageItem(){
-        return imageItem;
-    }
-    public String getNameItem(){
-        return nameItem;
-    }
-    public String getDescripcion() { return descripcion; }
+    public int getImageItem(){ return imageItem; }
 
+    public String getNameItem(){ return nameItem; }
+
+    public String getDescriptionItem(){ return descriptionItem; }
 }
